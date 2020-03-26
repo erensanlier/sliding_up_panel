@@ -619,107 +619,107 @@ class PanelController{
 }
 
 class DelegatingScrollController implements ScrollController {
-  final List<ScrollController> _controllers;
+  final List<ScrollController> _delegates;
 
-  ScrollController _delegate;
+  ScrollController _currentDelegate;
 
   DelegatingScrollController(int scrollViewCount, {int defaultScrollView = 0})
-    : _controllers = [for (int i = 0; i < scrollViewCount; i++) ScrollController()] {
-    _delegate = _controllers[defaultScrollView];
+    : _delegates = [for (int i = 0; i < scrollViewCount; i++) ScrollController()] {
+    _currentDelegate = _delegates[defaultScrollView];
   }
 
   void delegateTo(int i) {
-    this._delegate = _controllers[i];
+    this._currentDelegate = _delegates[i];
   }
 
   @override
   void debugFillDescription(List<String> description) {
-    _delegate.debugFillDescription(description);
+    _currentDelegate.debugFillDescription(description);
   }
 
   @override
   String toString() {
-    return _delegate.toString();
+    return _currentDelegate.toString();
   }
 
   @override
   ScrollPosition createScrollPosition(ScrollPhysics physics, ScrollContext context, ScrollPosition oldPosition) {
-    return _delegate.createScrollPosition(physics, context, oldPosition);
+    return _currentDelegate.createScrollPosition(physics, context, oldPosition);
   }
 
   @override
   void dispose() {
-    _delegate.dispose();
+    _currentDelegate.dispose();
   }
 
   @override
   void detach(ScrollPosition position) {
-    _delegate.detach(position);
+    _currentDelegate.detach(position);
   }
 
   @override
   void attach(ScrollPosition position) {
-    _delegate.attach(position);
+    _currentDelegate.attach(position);
   }
 
   @override
   void jumpTo(double value) {
-    _delegate.jumpTo(value);
+    _currentDelegate.jumpTo(value);
   }
 
   @override
   Future<Function> animateTo(double offset, {@required Duration duration, @required Curve curve}) {
-    return _delegate.animateTo(offset, duration: duration, curve: curve);
+    return _currentDelegate.animateTo(offset, duration: duration, curve: curve);
   }
 
   @override
   double get offset {
-    return _delegate.offset;
+    return _currentDelegate.offset;
   }
 
   @override
   ScrollPosition get position {
-    return _delegate.position;
+    return _currentDelegate.position;
   }
 
   @override
   bool get hasClients {
-    return _delegate.hasClients;
+    return _currentDelegate.hasClients;
   }
 
   @override
   Iterable<ScrollPosition> get positions {
-    return _delegate.positions;
+    return _currentDelegate.positions;
   }
 
   @override
   double get initialScrollOffset {
-    return _delegate.initialScrollOffset;
+    return _currentDelegate.initialScrollOffset;
   }
 
   @override
   void addListener(listener) {
-    _delegate.addListener(listener);
+    _currentDelegate.addListener(listener);
   }
 
   @override
-  String get debugLabel => _delegate.debugLabel;
+  String get debugLabel => _currentDelegate.debugLabel;
 
   @override
-  bool get hasListeners => _delegate.hasListeners;
+  bool get hasListeners => _currentDelegate.hasListeners;
 
   @override
-  bool get keepScrollOffset => _delegate.keepScrollOffset;
+  bool get keepScrollOffset => _currentDelegate.keepScrollOffset;
 
   @override
   void notifyListeners() {
-    _delegate.notifyListeners();
+    _currentDelegate.notifyListeners();
   }
 
   @override
   void removeListener(listener) {
-    _delegate.removeListener(listener);
+    _currentDelegate.removeListener(listener);
   }
 
-  of(int i) => _controllers[i];
+  delegate(int i) => _delegates[i];
 }

@@ -34,7 +34,7 @@ class _DemoAppState extends State<DemoApp> {
                               scrollController.delegateTo(0);
                               return ListView(
                                 physics: ClampingScrollPhysics(),
-                                controller: scrollController.of(0),
+                                controller: scrollController.delegate(0),
                                 children: [
                                   for (int i = 0; i < 100; i++)
                                     GestureDetector(
@@ -54,7 +54,7 @@ class _DemoAppState extends State<DemoApp> {
                               scrollController.delegateTo(1);
                               return ListView(
                                 physics: ClampingScrollPhysics(),
-                                controller: scrollController.of(1),
+                                controller: scrollController.delegate(1),
                                 children: [
                                   for (int i = 0; i < 100; i++)
                                     GestureDetector(
