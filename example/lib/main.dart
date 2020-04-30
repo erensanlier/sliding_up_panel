@@ -70,6 +70,7 @@ class _HomePageState extends State<HomePage> {
           SlidingUpPanel(
             maxHeight: _panelHeightOpen,
             minHeight: _panelHeightClosed,
+            interruptScrollOnTop: true,
             parallaxEnabled: true,
             parallaxOffset: .5,
             body: _body(),
