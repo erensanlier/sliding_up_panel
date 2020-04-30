@@ -434,10 +434,12 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
 
   // handles the sliding gesture
   void _onGestureSlide(double dy){
+    // reset value if changed direction
     if (_isTrackingStarted && dy < 0) {
       _isTrackingStarted = false;
     }
 
+    // check if inner scroll view is currently on the top
     if (!_isTrackingStarted) {
       _isTrackingStarted = true;
       _sc.isOnTop = _sc.offset <= 0;
