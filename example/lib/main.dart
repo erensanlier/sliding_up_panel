@@ -70,6 +70,7 @@ class _HomePageState extends State<HomePage> {
           SlidingUpPanel(
             maxHeight: _panelHeightOpen,
             minHeight: _panelHeightClosed,
+            interruptScrollOnTop: true,
             parallaxEnabled: true,
             parallaxOffset: .5,
             body: _body(),
@@ -78,6 +79,19 @@ class _HomePageState extends State<HomePage> {
             onPanelSlide: (double pos) => setState((){
               _fabHeight = pos * (_panelHeightOpen - _panelHeightClosed) + _initFabHeight;
             }),
+            header: Container(
+              height: 20,
+              child: Center(
+                child: Container(
+                  width: 30,
+                  height: 5,
+                  decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.all(Radius.circular(12.0))
+                  ),
+                ),
+              ),
+            ),
           ),
 
           // the fab
@@ -143,23 +157,7 @@ class _HomePageState extends State<HomePage> {
       child: ListView(
         controller: sc,
         children: <Widget>[
-          SizedBox(height: 12.0,),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                color: Colors.grey[300],
-                  borderRadius: BorderRadius.all(Radius.circular(12.0))
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 18.0,),
+          SizedBox(height: 30.0,),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

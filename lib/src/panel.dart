@@ -163,6 +163,10 @@ class SlidingUpPanel extends StatefulWidget {
   /// by default the Panel is open and must be swiped closed by the user.
   final PanelState defaultPanelState;
 
+  /// Defines if slide gesture either interrupts on the top of inner scroll view
+  /// or continues with closing of the panel.
+  final bool interruptScrollOnTop;
+
   final int scrollViewCount;
   final int defaultScrollView;
 
@@ -203,6 +207,7 @@ class SlidingUpPanel extends StatefulWidget {
     this.defaultPanelState = PanelState.CLOSED,
     this.scrollViewCount = 1,
     this.defaultScrollView = 0,
+    this.interruptScrollOnTop = false,
     this.header,
     this.footer
   }) : assert(panel != null || panelBuilder != null),
@@ -216,13 +221,18 @@ class SlidingUpPanel extends StatefulWidget {
 
 class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProviderStateMixin{
 
+  DelegatingScrollController _sc;
+  VelocityTracker _vt = new VelocityTracker();
   AnimationController _ac;
 
-  DelegatingScrollController _sc;
   bool get _scrollingEnabled => _sc.isScrollingEnabled;
-  VelocityTracker _vt = new VelocityTracker();
+  set _scrollingEnabled(bool value) => _sc.isScrollingEnabled = value;
+  bool get _canClosePanel => _sc.canClosePanel;
+  set _canClosePanel(bool value) => _sc.canClosePanel = value;
+  bool get _mustInterruptSlide => widget.interruptScrollOnTop;
 
   bool _isPanelVisible = true;
+  bool _isDragWithHeader = false;
 
   @override
   void initState(){
@@ -339,9 +349,16 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
 
                 // header
                 widget.header != null ? Positioned(
+                  left: 0.0,
                   top: widget.slideDirection == SlideDirection.UP ? 0.0 : null,
+                  right: 0.0,
                   bottom: widget.slideDirection == SlideDirection.DOWN ? 0.0 : null,
-                  child: widget.header,
+                  child: GestureDetector(
+                      onTapDown: (_) {
+                        _isDragWithHeader = true;
+                      },
+                      child: widget.header
+                  ),
                 ) : Container(),
 
                 // footer
@@ -422,11 +439,20 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     );
   }
 
+  bool _isTrackingStarted = false;
+
   // handles the sliding gesture
   void _onGestureSlide(double dy){
+    if (_isTrackingStarted && dy < 0) {
+      _isTrackingStarted = false;
+    }
 
     // only slide the panel if scrolling is not enabled
-    if(!_scrollingEnabled){
+    print("_onGestureSlide(): _mustInterruptSlide = $_mustInterruptSlide, _scrollingEnabled = $_scrollingEnabled, widget.interruptScrollOnTop = ${widget.interruptScrollOnTop}");
+    final mustScrollPanel = _isDragWithHeader
+        || _mustInterruptSlide && _canClosePanel
+        || !_mustInterruptSlide && !_scrollingEnabled;
+    if (mustScrollPanel) {
       if(widget.slideDirection == SlideDirection.UP)
         _ac.value -= dy / (widget.maxHeight - widget.minHeight);
       else
@@ -436,28 +462,45 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
     // if the panel is open and the user hasn't scrolled, we need to determine
     // whether to enable scrolling if the user swipes up, or disable closing and
     // begin to close the panel if the user swipes down
-    if(_isPanelOpen && _sc.hasClients && _sc.offset <= 0){
+    if(!_isDragWithHeader && _isPanelOpen && _sc.hasClients && _sc.offset <= 0){
       setState(() {
-        if(dy < 0){
-          _sc.isScrollingEnabled = true;
-        }else{
-          _sc.isScrollingEnabled = false;
-        }
+        _scrollingEnabled = dy < 0;
       });
+    }
+
+    if (!_isTrackingStarted) {
+      _isTrackingStarted = true;
+      _sc.canClosePanel = _sc.offset <= 0;
     }
   }
 
   // handles when user stops sliding
   void _onGestureEnd(Velocity v){
-    double minFlingVelocity = 365.0;
-    double kSnap = 8;
+    _isTrackingStarted = false;
 
-    //let the current animation finish before starting a new one
-    if(_ac.isAnimating) return;
+    // ignore all checks if started drag with handle
+    if (!_isDragWithHeader) {
+      if (_isPanelOpen && _mustInterruptSlide && !_canClosePanel) {
+        _canClosePanel = false;
+        return;
+      }
 
-    // if scrolling is allowed and the panel is open, we don't want to close
-    // the panel if they swipe up on the scrollable
-    if(_isPanelOpen && _scrollingEnabled) return;
+      //let the current animation finish before starting a new one
+      if (_ac.isAnimating) return;
+
+      // if scrolling is allowed and the panel is open, we don't want to close
+      // the panel if they swipe up on the scrollable
+      if (_isPanelOpen && _scrollingEnabled) return;
+    }
+
+    _isDragWithHeader = false;
+
+    if (!_scrollingEnabled) {
+      _canClosePanel = true;
+    }
+
+    final double minFlingVelocity = 365.0;
+    final double kSnap = 8;
 
     //check if the velocity is sufficient to constitute fling to end
     double visualVelocity = -v.pixelsPerSecond.dy / (widget.maxHeight - widget.minHeight);
@@ -468,10 +511,10 @@ class _SlidingUpPanelState extends State<SlidingUpPanel> with SingleTickerProvid
 
 
     // get minimum distances to figure out where the panel is at
-    double d2Close = _ac.value;
-    double d2Open = 1 - _ac.value;
-    double d2Snap = ((widget.snapPoint ?? 3) -_ac.value).abs(); // large value if null results in not every being the min
-    double minDistance = min(d2Close, min(d2Snap, d2Open));
+    final double d2Close = _ac.value;
+    final double d2Open = 1 - _ac.value;
+    final double d2Snap = ((widget.snapPoint ?? 3) -_ac.value).abs(); // large value if null results in not every being the min
+    final double minDistance = min(d2Close, min(d2Snap, d2Open));
 
     // check if velocity is sufficient for a fling
     if(v.pixelsPerSecond.dy.abs() >= minFlingVelocity){
@@ -732,6 +775,11 @@ class DelegatingScrollController implements ScrollController {
     _currentDelegate.isScrollingEnabled = isEnabled;
   }
 
+  bool get canClosePanel => _currentDelegate.canClosePanel;
+  set canClosePanel(bool value) {
+    _currentDelegate.canClosePanel = value;
+  }
+
   DelegatingScrollController(int scrollViewCount, {int defaultScrollView = 0})
     : _delegates = [for (int i = 0; i < scrollViewCount; i++) _ScrollDelegate(ScrollController())] {
     _currentDelegate = _delegates[defaultScrollView];
@@ -840,6 +888,7 @@ class DelegatingScrollController implements ScrollController {
 class _ScrollDelegate {
   final ScrollController scrollController;
   bool isScrollingEnabled = false;
+  bool canClosePanel = false;
 
   _ScrollDelegate(this.scrollController);
 }
