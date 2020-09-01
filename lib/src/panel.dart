@@ -497,8 +497,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
     }
 
     // only slide the panel if scrolling is not enabled
-    print(
-        "_onGestureSlide(): _mustInterruptSlide = $_mustInterruptSlide, _scrollingEnabled = $_scrollingEnabled, widget.interruptScrollOnTop = ${widget.interruptScrollOnTop}");
     final mustScrollPanel = _isDragWithHeader ||
         _mustInterruptSlide && _canClosePanel ||
         !_mustInterruptSlide && !_scrollingEnabled;
@@ -552,7 +550,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
       _canClosePanel = true;
     }
 
-    final double minFlingVelocity = 365.0;
+    final double minFlingVelocity = 400.0;
     final double kSnap = 8;
 
     //check if the velocity is sufficient to constitute fling to end
