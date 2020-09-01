@@ -593,8 +593,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
           curve: Curves.decelerate,
         );
       }
-
-      return;
     }
 
     // check if the controller is already halfway there
