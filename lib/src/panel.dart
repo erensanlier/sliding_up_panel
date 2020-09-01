@@ -574,8 +574,11 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
     if (v.pixelsPerSecond.dy.abs() >= minFlingVelocity) {
       // snapPoint exists
       if (widget.panelSnapping && widget.snapPoint != null) {
-        if (v.pixelsPerSecond.dy.abs() >= kSnap * minFlingVelocity ||
-            minDistance == d2Snap) _ac.fling(velocity: visualVelocity);
+        if (v.pixelsPerSecond.dy.abs() >= kSnap * minFlingVelocity &&
+            minDistance == d2Snap)
+          _ac.fling(velocity: visualVelocity);
+        else
+          _flingPanelToPosition(widget.snapPoint, visualVelocity);
 
         // no snap point exists
       } else if (widget.panelSnapping) {
