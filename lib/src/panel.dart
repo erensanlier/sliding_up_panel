@@ -489,7 +489,10 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
           _onGestureSlide(p.delta.dy);
         }
       },
-      onPointerUp: (PointerUpEvent p) => _onGestureEnd(_vt.getVelocity()),
+      onPointerUp: (PointerUpEvent p) {
+        if (p.delta.dy.abs() >= p.delta.dx.abs())
+          _onGestureEnd(_vt.getVelocity());
+      },
       child: child,
     );
   }
