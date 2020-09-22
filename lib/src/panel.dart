@@ -477,12 +477,17 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
     }
 
     return Listener(
-      onPointerDown: (PointerDownEvent p) =>
-          _vt.addPosition(p.timeStamp, p.position),
+      onPointerDown: (PointerDownEvent p) {
+        if (p.delta.dy.abs() >= p.delta.dx.abs()) {
+          _vt.addPosition(p.timeStamp, p.position);
+        }
+      },
       onPointerMove: (PointerMoveEvent p) {
-        _vt.addPosition(p.timeStamp,
-            p.position); // add current position for velocity tracking
-        if (p.delta.dy >= p.delta.dx) _onGestureSlide(p.delta.dy);
+        if (p.delta.dy.abs() >= p.delta.dx.abs()) {
+          _vt.addPosition(p.timeStamp,
+              p.position); // add current position for velocity tracking
+          _onGestureSlide(p.delta.dy);
+        }
       },
       onPointerUp: (PointerUpEvent p) => _onGestureEnd(_vt.getVelocity()),
       child: child,
