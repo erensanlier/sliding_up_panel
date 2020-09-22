@@ -603,7 +603,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
     }
 
     // check if the controller is already halfway there
-    if (widget.panelSnapping) {
+    if (widget.panelSnapping && !_ac.isAnimating) {
       if (minDistance == d2Close) {
         _close();
       } else if (minDistance == d2Snap) {
