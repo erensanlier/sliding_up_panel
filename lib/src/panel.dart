@@ -467,7 +467,6 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
 
     if (widget.panel != null) {
       return GestureDetector(
-        dragStartBehavior: DragStartBehavior.start,
         onVerticalDragUpdate: (DragUpdateDetails dets) {
           _onGestureSlide(dets.delta.dy);
         },
@@ -483,7 +482,7 @@ class _SlidingUpPanelState extends State<SlidingUpPanel>
       onPointerMove: (PointerMoveEvent p) {
         _vt.addPosition(p.timeStamp,
             p.position); // add current position for velocity tracking
-        _onGestureSlide(p.delta.dy);
+        if (p.delta.dy >= p.delta.dx) _onGestureSlide(p.delta.dy);
       },
       onPointerUp: (PointerUpEvent p) => _onGestureEnd(_vt.getVelocity()),
       child: child,
